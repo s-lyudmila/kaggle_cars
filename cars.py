@@ -18,6 +18,7 @@ columns = {'model': 'model',
            'mileage': ['mileage', 'mileage2'],
            'fuel_type': ['fuel type', 'fuelType', 'fuel type 2'],
            'tax': ['tax', 'tax(£)'],
+           'mpg': 'mpg',
            'engine_size': ['engine size', 'engine size2', 'engineSize']}
 
 # Combining all files into DataFrame
@@ -33,18 +34,14 @@ for file in os.listdir(path):
 
 # Checking for null values in the Dataframe
 plt.subplots()
-msno.matrix(df, figsize=(10, 10))
-plt.title('Матрица пустых значений')
-plt.subplots()
 msno.bar(df, figsize=(12, 8))
 plt.title('Пустые значения по столбцам')
 
-# Drop null values
-df.dropna(subset=['mileage', 'year'], inplace=True)
-df = df.loc[df['year'] < 2019]
+brands_with_na = df.loc[df['mpg'].isna()]
+brands_with_na = list(brands_with_na['brand'].unique())
 
-# Set categorical type, plotting with categorical data
-categorical = ['transmission', 'fuel_type', 'brand']
+# Set categorical type
+categorical = ['transmission', 'fuel_type', 'brand', 'model']
 df[categorical] = df[categorical].astype('category')
 
 # v_1 with matplotlib
@@ -53,6 +50,11 @@ by_fuel_type = df.groupby('fuel_type').agg({'fuel_type': 'count'}).rename(
 plt.subplots()
 plt.bar(by_fuel_type['fuel_type'], by_fuel_type['values'])
 plt.title('Количество машин по типу двигателя')
+
+# Replace cclass and focus with name of the brand
+to_replace = {'cclass': 'merc',
+              'focus': 'ford'}
+df['brand'] = df.brand.map(to_replace).fillna(df.brand)
 
 # v_2 with seaborn
 plt.subplots()
@@ -97,10 +99,11 @@ plt.title('Корреляционная матрица')
 plt.subplots()
 sns.histplot(bmw['price'], color='black')
 plt.title('Гистограмма распределения цен')
+descriptive_stat = df.describe()
 
 # Train/test split
 # TODO: сделать деление на тренировочную и тестовую выборку с sklearn.train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
 num_training = int(0.8 * bmw['price'].count())
 num_test = bmw['price'].count() - num_training
